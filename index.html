@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>오늘의 추천</title>
+    <style>
+      :root {
+        --bg: #f5f1e8;
+        --panel: rgba(255, 255, 255, 0.72);
+        --text: #111111;
+        --muted: rgba(17, 17, 17, 0.58);
+        --line: rgba(17, 17, 17, 0.1);
+        --shadow: 0 16px 40px rgba(17, 17, 17, 0.08);
+        --shadow-hover: 0 24px 52px rgba(17, 17, 17, 0.12);
+        --radius-xl: 34px;
+        --radius-lg: 22px;
+        --blue: #0d4ea6;
+        --teal: #0b5b52;
+        --gold: #f0b93a;
+        --pink: #ff7ba8;
+        --cream: #fff6df;
+        --mint: #d9f0e7;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        margin: 0;
+        min-height: 100%;
+      }
+
+      body {
+        font-family: "Pretendard", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+        color: var(--text);
+        background:
+          radial-gradient(circle at 18% 18%, rgba(255, 255, 255, 0.58), transparent 22%),
+          radial-gradient(circle at 82% 12%, rgba(240, 185, 58, 0.2), transparent 24%),
+          radial-gradient(circle at 76% 78%, rgba(13, 78, 166, 0.08), transparent 24%),
+          linear-gradient(180deg, #f7f3ec 0%, var(--bg) 100%);
+      }
+
+      .page {
+        position: relative;
+        min-height: 100vh;
+        overflow: hidden;
+      }
+
+      .page::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background-image:
+          linear-gradient(rgba(17, 17, 17, 0.025) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(17, 17, 17, 0.025) 1px, transparent 1px);
+        background-size: 36px 36px;
+        mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.6), transparent 92%);
+      }
+
+      .container {
+        position: relative;
+        max-width: 1180px;
+        margin: 0 auto;
+        padding: 18px 18px 22px;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 14px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-size: 0.92rem;
+        font-weight: 800;
+        letter-spacing: 0.01em;
+      }
+
+      .brand-mark {
+        width: 12px;
+        height: 12px;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--blue), var(--gold));
+        box-shadow: 0 0 0 7px rgba(13, 78, 166, 0.08);
+      }
+
+      .date-chip {
+        padding: 10px 14px;
+        border-radius: 999px;
+        border: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.54);
+        backdrop-filter: blur(12px);
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: rgba(17, 17, 17, 0.72);
+        white-space: nowrap;
+      }
+
+      .hero {
+        position: relative;
+        padding: 18px 18px 16px;
+        border: 1px solid rgba(17, 17, 17, 0.08);
+        border-radius: var(--radius-xl);
+        background:
+          radial-gradient(circle at 80% 20%, rgba(240, 185, 58, 0.22), transparent 23%),
+          radial-gradient(circle at 18% 18%, rgba(13, 78, 166, 0.08), transparent 24%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.88), rgba(255, 255, 255, 0.64));
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(16px);
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 7px 11px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.66);
+        border: 1px solid rgba(17, 17, 17, 0.08);
+        font-size: 0.78rem;
+        font-weight: 800;
+        color: rgba(17, 17, 17, 0.72);
+      }
+
+      .eyebrow-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--teal), var(--gold));
+      }
+
+      .hero h1 {
+        margin: 0;
+        max-width: 760px;
+        font-size: clamp(2rem, 5vw, 4.8rem);
+        line-height: 0.94;
+        letter-spacing: -0.07em;
+      }
+
+      .hero-date {
+        display: inline-flex;
+        align-items: center;
+        margin-top: 10px;
+        padding: 9px 12px;
+        border-radius: 14px;
+        background: rgba(255, 255, 255, 0.8);
+        border: 1px solid rgba(17, 17, 17, 0.08);
+        font-size: 0.82rem;
+        font-weight: 700;
+        color: rgba(17, 17, 17, 0.76);
+      }
+
+      .hero-lead {
+        margin: 10px 0 0;
+        max-width: 730px;
+        color: var(--muted);
+        font-size: 0.95rem;
+        line-height: 1.7;
+      }
+
+      .one-line {
+        margin-top: 12px;
+        padding: 12px 14px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.68);
+        border: 1px solid rgba(17, 17, 17, 0.08);
+      }
+
+      .one-line-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 8px;
+        padding: 6px 9px;
+        border-radius: 999px;
+        background: rgba(13, 78, 166, 0.08);
+        color: var(--blue);
+        font-size: 0.74rem;
+        font-weight: 800;
+        letter-spacing: 0.03em;
+      }
+
+      .one-line-text {
+        margin: 0;
+        font-size: clamp(1rem, 1.8vw, 1.14rem);
+        line-height: 1.55;
+        font-weight: 700;
+        color: rgba(17, 17, 17, 0.84);
+      }
+
+      .grid-wrap {
+        margin-top: 14px;
+        padding: 14px;
+        border-radius: var(--radius-xl);
+        border: 1px solid rgba(17, 17, 17, 0.06);
+        background: rgba(255, 255, 255, 0.4);
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(12px);
+      }
+
+      .grid-head {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 10px;
+        padding: 4px 4px 12px;
+      }
+
+      .grid-title {
+        margin: 0;
+        font-size: 0.98rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+      }
+
+      .grid-note {
+        margin: 4px 0 0;
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .status {
+        padding: 8px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(17, 17, 17, 0.08);
+        background: rgba(255, 255, 255, 0.68);
+        color: rgba(17, 17, 17, 0.68);
+        font-size: 0.74rem;
+        font-weight: 700;
+        white-space: nowrap;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 10px;
+      }
+
+      .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 150px;
+        padding: 14px;
+        border-radius: var(--radius-lg);
+        border: 1px solid rgba(17, 17, 17, 0.08);
+        background:
+          radial-gradient(circle at 16% 18%, rgba(255, 255, 255, 0.92), transparent 26%),
+          linear-gradient(180deg, rgba(255, 255, 255, 0.92), rgba(255, 255, 255, 0.58));
+        box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+        transition:
+          transform 180ms ease,
+          box-shadow 180ms ease,
+          border-color 180ms ease;
+        overflow: hidden;
+        isolation: isolate;
+      }
+
+      .card::before {
+        content: "";
+        position: absolute;
+        inset: auto -22px -26px auto;
+        width: 112px;
+        height: 112px;
+        border-radius: 34px;
+        opacity: 0.95;
+        filter: blur(0.2px);
+        transform: rotate(12deg);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .card::after {
+        content: "";
+        position: absolute;
+        top: 12px;
+        right: 12px;
+        width: 52px;
+        height: 52px;
+        border-radius: 18px;
+        background: rgba(255, 255, 255, 0.34);
+        border: 1px solid rgba(17, 17, 17, 0.05);
+        transform: rotate(10deg);
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      .card > * {
+        position: relative;
+        z-index: 1;
+      }
+
+      .card:hover {
+        transform: translateY(-6px) scale(1.01);
+        box-shadow: var(--shadow-hover);
+        border-color: rgba(17, 17, 17, 0.16);
+      }
+
+      .card:nth-child(1)::before {
+        background: radial-gradient(circle at 30% 30%, rgba(11, 91, 82, 0.26), transparent 66%);
+      }
+
+      .card:nth-child(2)::before {
+        background: radial-gradient(circle at 30% 30%, rgba(240, 185, 58, 0.26), transparent 66%);
+      }
+
+      .card:nth-child(3)::before {
+        background: radial-gradient(circle at 30% 30%, rgba(13, 78, 166, 0.22), transparent 66%);
+      }
+
+      .card:nth-child(4)::before {
+        background: radial-gradient(circle at 30% 30%, rgba(255, 123, 168, 0.24), transparent 66%);
+      }
+
+      .card-top {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .card-index {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        border-radius: 999px;
+        background: rgba(13, 78, 166, 0.08);
+        color: var(--blue);
+        font-size: 0.8rem;
+        font-weight: 800;
+      }
+
+      .badge {
+        margin-left: auto;
+        padding: 7px 9px;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.56);
+        border: 1px solid rgba(17, 17, 17, 0.06);
+        backdrop-filter: blur(10px);
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: rgba(17, 17, 17, 0.58);
+        letter-spacing: 0.02em;
+      }
+
+      .badge--subway {
+        background: rgba(11, 91, 82, 0.12);
+        color: var(--teal);
+      }
+
+      .badge--kbo {
+        background: rgba(240, 185, 58, 0.18);
+        color: #8a5a00;
+      }
+
+      .badge--kosis {
+        background: rgba(13, 78, 166, 0.12);
+        color: var(--blue);
+      }
+
+      .badge--health {
+        background: rgba(255, 123, 168, 0.12);
+        color: #a12858;
+      }
+
+      .card h3 {
+        margin: 12px 0 8px;
+        font-size: 1rem;
+        line-height: 1.25;
+        letter-spacing: -0.03em;
+      }
+
+      .card h3::after {
+        content: "";
+        display: block;
+        width: 28px;
+        height: 3px;
+        margin-top: 8px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, rgba(17, 17, 17, 0.12), transparent);
+      }
+
+      .card:nth-child(1) h3::after {
+        background: linear-gradient(90deg, rgba(11, 91, 82, 0.55), transparent);
+      }
+
+      .card:nth-child(2) h3::after {
+        background: linear-gradient(90deg, rgba(240, 185, 58, 0.65), transparent);
+      }
+
+      .card:nth-child(3) h3::after {
+        background: linear-gradient(90deg, rgba(13, 78, 166, 0.55), transparent);
+      }
+
+      .card:nth-child(4) h3::after {
+        background: linear-gradient(90deg, rgba(255, 123, 168, 0.7), transparent);
+      }
+
+      .metric {
+        display: block;
+        padding-top: 2px;
+        font-size: clamp(1.25rem, 3vw, 2rem);
+        font-weight: 900;
+        line-height: 1.05;
+        letter-spacing: -0.05em;
+        text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
+      }
+
+      .detail {
+        margin-top: 6px;
+        font-size: 0.86rem;
+        line-height: 1.45;
+        color: rgba(17, 17, 17, 0.78);
+      }
+
+      .meta {
+        margin-top: 12px;
+        padding-top: 8px;
+        border-top: 1px solid rgba(17, 17, 17, 0.08);
+        color: rgba(17, 17, 17, 0.52);
+        font-size: 0.68rem;
+        line-height: 1.45;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: 0.01em;
+      }
+
+      .card:nth-child(1) .metric {
+        color: #0d5f55;
+      }
+
+      .card:nth-child(2) .metric {
+        color: #8a5a00;
+      }
+
+      .card:nth-child(3) .metric {
+        color: var(--blue);
+      }
+
+      .card:nth-child(4) .metric {
+        color: #a12858;
+      }
+
+      .card:nth-child(1)::after {
+        background: linear-gradient(145deg, rgba(11, 91, 82, 0.08), rgba(255, 255, 255, 0.28));
+      }
+
+      .card:nth-child(2)::after {
+        background: linear-gradient(145deg, rgba(240, 185, 58, 0.12), rgba(255, 255, 255, 0.3));
+      }
+
+      .card:nth-child(3)::after {
+        background: linear-gradient(145deg, rgba(13, 78, 166, 0.1), rgba(255, 255, 255, 0.3));
+      }
+
+      .card:nth-child(4)::after {
+        background: linear-gradient(145deg, rgba(255, 123, 168, 0.12), rgba(255, 255, 255, 0.3));
+      }
+
+      .watermark {
+        position: absolute;
+        right: 18px;
+        bottom: 10px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        color: rgba(17, 17, 17, 0.26);
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        pointer-events: none;
+      }
+
+      @media (min-width: 1120px) {
+        .cards {
+          grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .card {
+          min-height: 170px;
+        }
+      }
+
+      @media (max-width: 767px) {
+        .container {
+          padding: 12px 12px 16px;
+        }
+
+        .topbar,
+        .grid-head {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .hero {
+          padding: 14px 14px 12px;
+        }
+
+        .hero h1 {
+          max-width: 11ch;
+          font-size: 1.9rem;
+          line-height: 0.98;
+        }
+
+        .hero-lead {
+          display: none;
+        }
+
+        .hero-date {
+          margin-top: 8px;
+          padding: 7px 10px;
+        }
+
+        .one-line {
+          margin-top: 10px;
+          padding: 10px 11px;
+        }
+
+        .one-line-text {
+          font-size: 0.96rem;
+        }
+
+        .grid-wrap {
+          margin-top: 10px;
+          padding: 10px;
+        }
+
+        .grid-note {
+          display: none;
+        }
+
+        .grid-head {
+          padding-bottom: 8px;
+        }
+
+        .cards {
+          gap: 6px;
+        }
+
+        .card {
+          min-height: 114px;
+          padding: 10px;
+        }
+
+        .card h3 {
+          margin: 8px 0 4px;
+          font-size: 0.88rem;
+        }
+
+        .metric {
+          font-size: 1.06rem;
+        }
+
+        .detail {
+          margin-top: 4px;
+          font-size: 0.7rem;
+          line-height: 1.25;
+        }
+
+        .meta {
+          margin-top: 8px;
+          padding-top: 6px;
+          font-size: 0.58rem;
+        }
+
+        .card::before {
+          inset: auto -26px -30px auto;
+          width: 92px;
+          height: 92px;
+          border-radius: 28px;
+        }
+
+        .card::after {
+          top: 10px;
+          right: 10px;
+          width: 40px;
+          height: 40px;
+          border-radius: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <div class="container">
+        <header class="topbar">
+          <div class="brand">
+            <span class="brand-mark" aria-hidden="true"></span>
+            오늘의 추천
+          </div>
+          <div class="date-chip">2026년 6월 11일 목요일</div>
+        </header>
+
+        <section class="hero" aria-labelledby="hero-title">
+          <div class="eyebrow">
+            <span class="eyebrow-dot" aria-hidden="true"></span>
+            오늘의 한 장 인포그래픽
+          </div>
+          <h1 id="hero-title">오늘 꼭 볼 것만 한눈에</h1>
+          <div class="hero-date">오늘 날짜: 2026년 6월 11일 목요일</div>
+          <p class="hero-lead">
+            숫자와 키워드만 남겨서 빠르게 읽히게 했고, 아이폰 16 기준으로도 한 화면 안에 보이도록
+            압축했습니다.
+          </p>
+          <div class="one-line" aria-live="polite">
+            <div class="one-line-label">오늘의 한 줄 추천</div>
+            <p class="one-line-text">
+              🚇 강남역 2분 30초 후로 출근 리듬을 잡고, 🏟️ 어제는 SSG 6 - 8 LG였고, 📈 오늘은 83.7세를 보고,
+              💧 물 한 컵부터 챙겨볼까요?
+            </p>
+          </div>
+        </section>
+
+        <section class="grid-wrap" aria-labelledby="cards-title">
+          <div class="grid-head">
+            <div>
+              <h2 class="grid-title" id="cards-title">추천 카드</h2>
+              <p class="grid-note">출처와 조회 시각은 아주 작게만 표시했습니다.</p>
+            </div>
+            <div class="status">인포그래픽 · 4 cards</div>
+          </div>
+
+          <div class="cards">
+            <article class="card">
+              <div class="card-top">
+                <span class="card-index">01</span>
+                <span class="badge badge--subway">실시간</span>
+              </div>
+              <h3>출근길</h3>
+              <span class="metric">강남역 2분 30초 후</span>
+              <div class="detail">신분당선 상행 · 성수행 · 신사행 - 신논현방면</div>
+              <div class="meta">출처: 서울시 실시간 지하철 도착정보 (k-skill proxy) · 조회: 2026-06-11 13:19:55</div>
+            </article>
+
+            <article class="card">
+              <div class="card-top">
+                <span class="card-index">02</span>
+                <span class="badge badge--kbo">스냅샷</span>
+              </div>
+              <h3>어제 한 경기</h3>
+              <span class="metric">SSG 6 - 8 LG</span>
+              <div class="detail">2026-06-10 · 잠실 · 경기종료</div>
+              <div class="meta">출처: KBO 스코어보드 · 조회: 2026. 06. 11. 13:27</div>
+            </article>
+
+            <article class="card">
+              <div class="card-top">
+                <span class="card-index">03</span>
+                <span class="badge badge--kosis">스냅샷</span>
+              </div>
+              <h3>오늘의 지표</h3>
+              <span class="metric">83.7세</span>
+              <div class="detail">KOSIS · 기대수명(´24)</div>
+              <div class="meta">출처: KOSIS 국가통계포털 · 조회: 2026. 06. 11. 13:27</div>
+            </article>
+
+            <article class="card">
+              <div class="card-top">
+                <span class="card-index">04</span>
+                <span class="badge badge--health">고정</span>
+              </div>
+              <h3>건강 한 줄</h3>
+              <span class="metric">💧 물 한 컵</span>
+              <div class="detail">목·어깨 30초 스트레칭</div>
+              <div class="meta">출처: 외부 호출 없음 · 고정 문구 · 조회: 2026. 06. 11. 13:27</div>
+            </article>
+          </div>
+        </section>
+
+        <div class="watermark">삼성생명</div>
+      </div>
+    </main>
+  </body>
+</html>
